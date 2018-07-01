@@ -1,0 +1,10 @@
+
+__init__.py  ===>>>>>
+
+# FLASK-IMAGES
+from flask_images import Images, resized_img_src
+app.config["IMAGES_PATH"] = ['static/img/wall/']
+images = Images(app)
+
+# FLASK-RESIZE
+import flask_resize

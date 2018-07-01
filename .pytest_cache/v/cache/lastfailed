@@ -1,0 +1,9 @@
+{
+  "tests/test_decorators.py::TestDecorators::test_json_rejects_html_clients": true, 
+  "tests/test_models.py::TestMessage::test_make_welcome_message": true, 
+  "tests/test_models.py::TestMessage::test_no_messages_in_empty_db": true, 
+  "tests/test_models.py::TestUser::test_create_user": true, 
+  "tests/test_models.py::TestUser::test_no_users_in_empty_db": true, 
+  "tests/test_views.py::TestSignUp::test_login": true, 
+  "tests/test_views.py::TestSignUp::test_sign_up": true
+}

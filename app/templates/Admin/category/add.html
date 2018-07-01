@@ -1,0 +1,52 @@
+{% extends 'Admin/layouts/_base.html' %}
+{% set title = pageMetaTitle %}
+{% set active_menu =activeMenu %}
+{% block body %}
+    <!-- /#page-wrapper -->
+    <div id="page-wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <h4 class="page-header">{{pageTitle}}</h4>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="col-lg-6">
+                    {% with messages = get_flashed_messages(with_categories=True) %}
+                        {% for category, message in messages %}
+                           <div class="alert alert-{{category|default('info')}} alert-dismissable">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>{{ message }}
+                            {% if form.errors!=None %}
+                                <ul class=errors>
+                                    {% for field, errors in form.errors.items() %}
+                                        {% for error in errors %}
+                                            <li>Error - {{form[field].label.text}} {{error}}</li>
+                                        {% endfor%}
+                                    {%endfor%}
+                                </ul>
+                            {% endif %}
+                           </div>
+                        {% endfor %}
+                    {% endwith %}
+                    <form role="form" action="{{ url_for('adminCategoryAdd') }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                        <fieldset>
+                            <div class="form-group">
+                                <input class="form-control" placeholder="Category Name" name="category_name" type="text" utofocus>
+                            </div>
+                            <div class="form-group">
+                                <input class="form-control"  name="category_logo" type="file" value="">
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success">Save</button>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- ./#page-wrapper -->
+{% endblock %}
+    

@@ -1,0 +1,14 @@
+{% include "Admin/includes/_header.html" %} 
+<div id="wrapper">
+    <!-- /.navbar-static-side -->
+    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+    {% include "Admin/includes/_navbar.html" %}  
+    {%- include "Admin/includes/_leftMenu.html" -%}
+    </nav>
+    <!-- /.navbar-static-side -->
+    {{- "" if active_page -}}
+    {{- "" if user -}}
+    {% block body %}
+    {% endblock %}
+</div>
+{% include "Admin/includes/_footer.html" %} 

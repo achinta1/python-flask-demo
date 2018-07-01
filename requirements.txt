@@ -1,0 +1,2 @@
+# This is PIP magic to mean "take it from the local setup.py".
+-e .

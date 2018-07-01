@@ -1,0 +1,59 @@
+<!-- Dropzone ui CSS -->
+    <link href="{{url('design_materials/dropzone/css/dropzone.css')}}" rel="stylesheet">
+    <!-- Dropzone js -->
+    <script src="{{url('design_materials/dropzone/js/dropzone.js')}}"></script>
+
+    <div id="DropZoneUploadFile" data-action_url="{{url('/admin/client-asset/upload-drop-zone-images/').'/'.(isset($clientDetail->id)?base64_encode($clientDetail->id):0)}}"><div class="dz-message-palceholder"><span>Drag & Drop Image (at one time you can upload {{ Config::get('customConfig.dropzone_max_no_of_file')}} image).</span></div>
+	</div>
+
+	<script type="">
+		//===== dropzone ========   
+        Dropzone.autoDiscover = false;
+        var fileList = new Array;
+        var i = 0;
+        $("#DropZoneUploadFile").dropzone({
+          url:$("#DropZoneUploadFile").data('action_url'),
+          addRemoveLinks: true,
+          maxFiles: '<?php echo Config::get('customConfig.dropzone_max_no_of_file')?>',
+          dictMaxFilesExceeded: "Maximum upload limit reached",
+          acceptedFiles: "image/jpeg,image/png,image/gif",
+          dictInvalidFileType: "upload only JPG/JPEG/PNG/gif",
+          headers:{'_token':$('meta[name="csrf-token"]').attr('content'),'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
+          maxFilesize:'<?php echo Config::get('customConfig.max_upload_file_size')?>',
+          init: function () {
+            //Add the dropzone class to the element
+            $(this.element).addClass("dropzone");
+            this.on("success", function (file, serverFileName) {
+              fileList[i] = {
+                "serverFileName": serverFileName,
+                "fileName": file.name,
+                "fileId": i
+              };
+              $('.dz-message').show();
+              if(i<=0){
+                $("#DropZoneUploadFile").find('div.dz-message-palceholder').hide();
+              }
+              i += 1;
+            });
+            this.on("removedfile", function (file) {
+              var rmvFile = "";
+              for (var f = 0; f < fileList.length; f++) {
+                if (fileList[f].fileName == file.name) {
+                  rmvFile = fileList[f].serverFileName;
+                }
+              }
+              if (rmvFile) {
+                $.ajax({
+                  url:$("#DropZoneUploadFile").data('action_url'), //your php file path to remove specified image
+                  type: "POST",
+                  data: {
+                    'filenamenew': rmvFile,
+                    'type': 'delete',
+                    '_token':$('meta[name="csrf-token"]').attr('content'),
+                  },
+                });
+              }
+            });
+          }
+        });
+	</script>

@@ -1,0 +1,257 @@
+{% extends 'Admin/layouts/_base.html' %}
+{% set title = pageMetaTitle %}
+{% set active_menu =activeMenu %}
+{% block body %}
+    <style type="text/css">
+        .deleteBtn{position: absolute;}
+    </style>
+    <!-- Dropzone ui CSS -->
+    <link href="{{static('dropzone/css/dropzone.css')}}" rel="stylesheet">
+    <!-- Dropzone js -->
+    <script src="{{static('dropzone/js/dropzone.js')}}"></script>
+    <!-- /#page-wrapper -->
+    <div id="page-wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <h4 class="page-header">{{pageTitle}}</h4>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="col-lg-6">
+                    {% with messages = get_flashed_messages(with_categories=True) %}
+                        {% for category, message in messages %}
+                           <div class="alert alert-{{category|default('info')}} alert-dismissable">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>{{ message }}
+                            {% if form.errors!=None %}
+                                <ul class=errors>
+                                    {% for field, errors in form.errors.items() %}
+                                        {% for error in errors %}
+                                            <li>Error - {{form[field].label.text}} {{error}}</li>
+                                        {% endfor%}
+                                    {%endfor%}
+                                </ul>
+                            {% endif %}
+                           </div>
+                        {% endfor %}
+                    {% endwith %}
+                    <form role="form" action="{{ url_for('adminProductEdit',id=productData.id) }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                        <fieldset>
+                            <div class="form-group">
+                                <label for="category">Category<em class="red-color">*</em> :</label>
+                                <select class="form-control" name="category">
+                                    <option value="">--Select Category--</option>
+                                    {% if categoryList!=None %}
+                                        {% for category in categoryList %}
+                                            <option value="{{category.id}}" {% if productData.cat_id == category.id %}  selected="selected" {% endif %} >{{category.name}}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="pull-left" style="width:100%;" id="subCategoryInputSec">
+                                    <label for="sub_category">Sub Category<em class="red-color">*</em> :</label>
+                                    <select class="form-control" name="sub_category">
+                                        <option value="">--Select Sub Category--</option>
+                                    </select>
+                                </div>
+                                <div class="pull-left" id="subCategoryLoaderSec" style="margin-top:30px;padding-left:10px;width:5%; display:none;">
+                                    <div><img src="{{static('images/ajax-loader.gif')}}" width="20"></div> 
+                                </div>
+                            </div>
+                            <div class="clearfix form-group"></div>
+                            <div class="form-group">
+                                <label for="category">Is Feature Product<em class="red-color">*</em> :</label>
+                                <select class="form-control" name="is_feature_product">
+                                    <option value="">--Select--</option>
+                                        <option value="Y" {% if productData.is_feature == 'Y' %}  selected="selected" {% endif %} >Yes</option>
+                                        <option value="N" {% if productData.is_feature == 'N' %}  selected="selected" {% endif %}>No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Is Appear on Banner<em class="red-color">*</em> :</label>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="is_appear_on_banner" value="Y" {% if productData.is_banner_appear =='Y' %}  checked="checked"  {% endif %}>
+                                        Yes
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="is_appear_on_banner" value="N" {% if productData.is_banner_appear =='Y' %}  checked="checked"  {% endif %}>
+                                        No
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="product_name">Product Name<em class="red-color">*</em> :</label>
+                                <input class="form-control" value="{{productData.p_name}}" name="product_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="product_price">Product Price<em class="red-color">*</em> :</label>
+                                <input class="form-control" value="{{'%0.2f'| format(productData.p_price|float)}}" name="product_price">
+                            </div>
+                            <div class="form-group">
+                                <label for="product_discount_percent">Product Discount(%)<em class="red-color">*</em> :</label>
+                                <input class="form-control" value="{{'%0.2f'| format(productData.p_discount_percent|float)}}" name="product_discount_percent">
+                            </div>
+                            <div class="form-group">
+                                <label for="product_descriptions">Product Descriptions<em class="red-color">*</em> :</label>
+                                <textarea class="form-control" name="product_descriptions" rows="5" cols="5" >{{productData.p_descriptions}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                {% set imageUrl = static('uploads/120px-Nologo.png')  %}
+                                {% if productData.default_image_path!=None and productData.default_image_path!='' %}
+                                    {% set imageUrl = static(productData.default_image_path) %}
+                                {% endif %}
+                                <img src="{{ imageUrl|resize('40x40', format='png')}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="product_default_image">Product Default Image :</label>
+                                <input class="form-control"  name="product_default_image" type="file" value="">
+                                <p class="help-block">Please upload 1920x1080 size image</p>
+                            </div>
+
+                            <div class="form-group">
+                                {% set bannerImageUrl = static('uploads/120px-Nologo.png')  %}
+                                {% if productData.banner_image_path!=None and productData.banner_image_path!='' %}
+                                    {% set bannerImageUrl = static(productData.banner_image_path) %}
+                                {% endif %}
+                                <img src="{{ bannerImageUrl|resize('40x40', format='png')}}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="banner_image">Product Banner Image :</label>
+                                <input class="form-control"  name="banner_image" type="file" value="">
+                                <p class="help-block">Please upload 1920x1080 size image</p>
+                            </div>
+                            {% if productData.images!=None %}
+                                <div class="form-group">
+                                    <label for="other_images">Product Other Image :</label>
+                                    <div class="col-lg-12">
+                                    {% for images in productData.images %}
+                                        {% set imageUrl = static('uploads/120px-Nologo.png')  %}
+                                        {% if images.image_path!=None and images.image_path!='' %}
+                                            {% set imageUrl = static(images.image_path) %}
+                                        {% endif %}
+                                        <div class="col-lg-3" style="padding: 2px;" >
+                                            <span class="close deleteBtn">&times;</span>
+                                            <img src="{{ imageUrl|resize('60x60', format='png')}}" class="img-thumbnail otherImages" alt="Cinque Terre">
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="form-group">
+                                <label for="other_images">Upload Product Other Image :</label>
+                                <div id="DropZoneUploadFile" data-action_url="{{url_for('adminProductMultipleimageUpload',id=productData.id)}}"><div class="dz-message-palceholder"><span>Drag & Drop Image (at one time you can upload {{((config['MAX_ONETIME_FILE_UPLOAD']))|round|int}} image) and upload 1920x1080 size image.</span></div>
+                                </div>
+                                <p class="help-block">Please upload 1920x1080 size image</p>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success">Save</button>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- ./#page-wrapper -->
+    <script type="text/javascript">
+        $(document).ready(function(e){
+            subCategoryLoad({{productData.cat_id}});
+            $('select[name="category"]').on('change',function(e){
+                subCategoryLoad($(this).val());
+            });
+        });
+        function subCategoryLoad(Id){
+            $("#subCategoryInputSec").find('select').html('<option value="">--Select Sub Category--</option>');
+            $("#subCategoryInputSec").css({'width':'95%'});
+            $("#subCategoryLoaderSec").css({'width':'5%','display':'block'});
+            var prepareData='';
+            $.getJSON($SCRIPT_ROOT + '/api/subcategory/list/'+Id, {},function(data){
+                prepareData +='<option value="">--Select Sub Category--</option>';
+                if(data!=undefined && data.length>0){
+                    $.each(data,function(key,val){
+                        if({{productData.sub_cat_id}}==val.id){
+                            prepareData +='<option value="'+val.id+'" selected="selected">'+val.name+'</option>';
+                        }else{
+                            prepareData +='<option value="'+val.id+'">'+val.name+'</option>';
+                        }
+                    }); 
+                } 
+                setTimeout(function(){
+                    $("#subCategoryLoaderSec").css({'display':'none'});
+                    $("#subCategoryInputSec").css({'width':'100%'});
+                    $("#subCategoryInputSec").find('select').html(prepareData);
+                },500)   
+            });
+        }
+        //===== dropzone ========   
+        Dropzone.autoDiscover = false;
+        var fileList = new Array;
+        var i = 0;
+        $("#DropZoneUploadFile").dropzone({
+          url:$("#DropZoneUploadFile").data('action_url'),
+          addRemoveLinks: true,
+          maxFiles:"{{((config['MAX_ONETIME_FILE_UPLOAD']))|round|int}}",
+          dictMaxFilesExceeded: "Maximum upload limit reached",
+          acceptedFiles: "image/jpeg,image/png,image/gif,image/jpg",
+          dictInvalidFileType: "upload only JPG/JPEG/PNG/gif",
+          headers:{'_token':$('meta[name="csrf-token"]').attr('content'),'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
+          maxFilesize:"{{((config['MAX_CONTENT_LENGTH']))|round|int}}",
+          init: function () {
+            //Add the dropzone class to the element
+            $(this.element).addClass("dropzone");
+            this.on("success", function (file, serverResponse) {
+                if(serverResponse.status!=undefined && serverResponse.status=='success'){
+                    fileList[i] = {
+                        "serverFileName": serverResponse.fileName,
+                        'serverFileId':serverResponse.fileId,
+                        "fileName": file.name,
+                        "fileId": i
+                    };
+                    $('.dz-message').show();
+                    if(i<=0){
+                        $("#DropZoneUploadFile").find('div.dz-message-palceholder').hide();
+                    }
+                    i += 1;
+                }else if(serverResponse.status!=undefined && serverResponse.status=='error'){
+                    file.previewElement.classList.add("dz-error"); 
+                    $(file.previewElement).find('.dz-error-message').text(serverResponse.msg);
+                }
+            });
+            this.on("removedfile", function (file) {
+              var rmvFile = "";
+              var rmvFileId=0;
+              for (var f = 0; f < fileList.length; f++) {
+                if (fileList[f].fileName == file.name) {
+                  rmvFile = fileList[f].serverFileName;
+                  rmvFileId=fileList[f].serverFileId;
+                }
+              }
+              if (rmvFile) {
+                $.ajax({
+                    headers:{'_token':$('meta[name="csrf-token"]').attr('content'),'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
+                    url:$("#DropZoneUploadFile").data('action_url'), //your php file path to remove specified image
+                    type: "POST",
+                    data: {
+                        'remove_file': rmvFile,
+                        'remove_file_id': rmvFileId,
+                        'type': 'delete',
+                        'csrf_token':$('meta[name="csrf-token"]').attr('content'),
+                    },
+                });
+              }
+            });
+            this.on("error", function (file,response){
+                 file.previewElement.classList.add("dz-error");
+            });
+          }
+        });
+    </script>
+{% endblock %}
+    
